@@ -1,0 +1,11 @@
+pandas
+scikit-learn
+openpyxl
+joblib
+streamlit
+folium
+streamlit-folium
+h3
+numpy
+altair
+geopy

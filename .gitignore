@@ -3,7 +3,6 @@ _pycache_/
 *.pyc
 *.pyo
 *.pyd
-data/raw/*.xlsx
 data/processed/*.csv (si los generas)
 models/
 data/processed

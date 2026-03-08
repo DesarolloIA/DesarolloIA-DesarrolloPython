@@ -1,108 +1,121 @@
-# 🗺️ SIPID - Sistema de Inteligencia Comercial Territorial
+﻿# SIPID - Sistema de Inteligencia Predictiva para la Investigación Delictiva
 
-Este proyecto es una herramienta integral de analítica espacial y machine learning diseñada para procesar datos históricos (delitos/eventos), generar modelos predictivos de demanda basados en mallas hexagonales (H3) y visualizar los resultados a través de un dashboard interactivo utilizando Streamlit y Folium.
+SIPID es una plataforma de análisis geoespacial y aprendizaje automático orientada a la prevención e identificación delictiva. Procesa datos históricos de incidencia (2020-2025), genera inteligencia territorial con malla hexagonal H3 y visualiza resultados en un dashboard interactivo construido con Streamlit y Folium.
 
-## 📂 Estructura del Proyecto
+## Objetivo del Proyecto
 
-El repositorio sigue una arquitectura modular y organizada para separar los datos, los modelos y el código fuente:
+Transformar registros históricos de delitos en predicciones accionables para identificar zonas de riesgo, priorizar vigilancia y apoyar la toma de decisiones operativas.
+
+## Estructura del Proyecto
 
 ```text
 SIPID/
-├── data/                   # Almacenamiento de datos (ignorado en Git por seguridad)
-│   ├── processed/          # Datos limpios y procesados (ej. datos_limpios_para_modelo.csv)
-│   └── raw/                # Archivos Excel originales (ej. DELITOS DE ALTO IMPACTO-202X.xlsx)
-├── models/                 # Modelos entrenados y codificadores exportados (.joblib)
-│   ├── grid_encoder.joblib
-│   ├── modalidad_encoder.joblib
-│   └── sipid_model.joblib
-├── src/                    # Código fuente del pipeline de machine learning
-│   ├── __init__.py
-│   ├── process_data.py     # Script para limpieza, geofiltro y generación de la malla H3 (Fase 2)
-│   └── train_model.py      # Script para entrenar el modelo Random Forest (Fase 3)
-├── venv/                   # Entorno virtual de Python (local)
-├── .gitignore              # Archivos y carpetas a ignorar por Git (venv, data, __pycache__, etc.)
-├── dashboard.py            # Aplicación frontend en Streamlit (Interfaz gráfica y mapas)
-├── main.py                 # Orquestador principal que ejecuta el procesamiento y entrenamiento
-└── requirements.txt        # Dependencias y librerías necesarias del proyecto
+|-- data/                   # Datos del proyecto (ignorado en Git)
+|   |-- processed/          # Datos limpios y estructurados
+|   `-- raw/                # Archivos originales (.xlsx 2020-2025)
+|-- models/                 # Artefactos serializados (.joblib)
+|   |-- grid_encoder.joblib
+|   |-- modalidad_encoder.joblib
+|   `-- sipid_best_model.joblib
+|-- src/                    # Lógica de procesamiento y entrenamiento
+|   |-- __init__.py
+|   |-- process_data.py     # ETL y feature engineering
+|   `-- train_model.py      # Benchmark y entrenamiento de modelos
+|-- dashboard.py            # Interfaz forense (Streamlit)
+|-- main.py                 # Orquestador del pipeline
+|-- requirements.txt        # Dependencias del proyecto
+`-- README.md
 ```
 
-## ⚙️ Requisitos Previos
+## Stack Tecnológico
 
-Asegúrate de tener instalado en tu sistema:
+- Python 3.10+
+- Pandas, NumPy, Openpyxl
+- H3, Geopy, Folium
+- Scikit-learn, XGBoost, LightGBM
+- Streamlit, Altair
+- Joblib
 
-- Python 3.8 o superior
-- Git
+## Pipeline de Datos (ETL)
 
-## 🚀 Guía de Instalación
+1. Ingesta y unificación de archivos `.xlsx` históricos.
+2. Limpieza de datos y normalización de campos.
+3. Transformación temporal (`hora`, `día_semana`, `mes`).
+4. Filtro espacial por bounding box para eliminar outliers.
+5. Conversión de coordenadas a celdas H3 (resolución definida).
+6. Codificación categórica para entrenamiento.
 
-Sigue estos pasos para clonar e inicializar el proyecto en tu entorno local:
+## Modelado Predictivo
 
-1. Clonar el repositorio:
+SIPID evalúa un marco comparativo de ensambles para clasificación multiclase de riesgo por celda H3:
+
+- Random Forest (baseline)
+- XGBoost (challenger)
+- LightGBM (challenger)
+
+Métricas principales:
+
+- F1-Score (Macro)
+- Log-Loss
+- Error geoespacial (Haversine)
+
+El modelo con mejor desempeño global se serializa como `sipid_best_model.joblib`.
+
+## Requisitos Previos
+
+- Python 3.10 o superior
+- `pip`
+- Git (opcional para clonar)
+
+## Instalación
 
 ```bash
-git clone https://github.com/tu-usuario/tu-repositorio-sipid.git
-cd tu-repositorio-sipid
-```
-
-2. Crear un Entorno Virtual: Es una buena práctica utilizar un entorno virtual para aislar las dependencias del proyecto.
-
-```bash
+git clone <URL_DEL_REPOSITORIO>
+cd "SIPID - VGITHUB"
 python -m venv venv
 ```
 
-3. Activar el Entorno Virtual:
+Activación del entorno virtual:
 
-En Windows:
+Windows:
 
 ```bash
 venv\Scripts\activate
 ```
 
-En macOS y Linux:
+macOS/Linux:
 
 ```bash
 source venv/bin/activate
 ```
 
-4. Instalar las dependencias: Con el entorno virtual activado, instala todas las librerías requeridas leídas desde tu archivo `requirements.txt`:
+Instalar dependencias:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## 🛠️ Cómo Ejecutar el Proyecto
+## Ejecución
 
-El flujo de trabajo se divide en dos grandes etapas: la preparación/entrenamiento del modelo y la visualización en el panel interactivo.
-
-Paso 1: Preparar los Datos Originales
-
-Asegúrate de colocar tus archivos de Excel originales con los datos geolocalizados dentro de la carpeta `data/raw/`. El sistema buscará archivos con extensión `.xlsx` y leerá la hoja correspondiente (por defecto `RoboAuto`).
-
-Paso 2: Ejecutar el Pipeline de Procesamiento y Entrenamiento
-
-Una vez que los datos estén en su lugar, ejecuta el script principal. Este script se encargará de limpiar los datos, generar los hexágonos H3, guardar el dataset procesado y entrenar el modelo predictivo (Random Forest):
+1. Coloca los archivos fuente en `data/raw/`.
+2. Ejecuta el pipeline de preparación y entrenamiento:
 
 ```bash
 python main.py
 ```
 
-Si la ejecución es exitosa, verás en la consola los mensajes de "Datos guardados en..." y "Modelo guardado en..." confirmando que los archivos `.joblib` y el `.csv` están listos.
-
-Paso 3: Levantar el Dashboard Interactivo
-
-Para visualizar los mapas de calor, las predicciones de la Inteligencia Artificial y las estadísticas forenses espaciales, inicia el servidor de Streamlit:
+3. Inicia la interfaz web:
 
 ```bash
 streamlit run dashboard.py
 ```
 
-Esto abrirá automáticamente una pestaña en tu navegador web predeterminado (usualmente en `http://localhost:8501`) mostrando el panel de control de SIPID.
+La aplicación abrirá en `http://localhost:8501`.
 
-## 📊 Módulos del Dashboard
+## Módulos del Dashboard
 
-Una vez dentro de la aplicación web, encontrarás tres pestañas principales:
+- Análisis Predictivo: estimación de probabilidad delictiva por tipo, fecha y horario.
+- Análisis Temático: hotspots históricos por modalidad delictiva.
+- Panorama Evolutivo: comportamiento territorial por año y tendencias.
+- Estadística Forense: distribución por hora, día y zonas críticas.
 
-- Análisis Predictivo: Permite seleccionar una línea de negocio, mes, día y ventana horaria para calcular las zonas de "Alta Oportunidad" usando el modelo Random Forest.
-- Análisis Temático: Genera un mapa de calor histórico para analizar la densidad y concentración de transacciones o eventos pasados según su tipología.
-- Panorama Territorial: Muestra la evolución global y consolidada de la actividad comercial dividida por años, utilizando una paleta de colores forense.
-"# DesarrolloPython" 
